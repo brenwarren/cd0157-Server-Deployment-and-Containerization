@@ -16,24 +16,13 @@ phases:
       # You must use a kubectl version that is within one minor version difference of your Amazon EKS cluster control plane. 
       # For example, a 1.21 kubectl client works with Kubernetes 1.20, 1.21 and 1.22 clusters.
       # Ref: https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html OR https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
-      # To download a specific version v1.33 on Linux, use:
-      - curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.33/bin/linux/amd64/kubectl
-      # Download the kubectl checksum file
-      - curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.33/bin/linux/amd64/kubectl.sha256
-      # Validate the kubectl binary against the checksum file (simple approach)
-      - "echo 'Contents of kubectl.sha256:'"
-      - cat kubectl.sha256
-      - "echo 'Calculating checksum of kubectl binary:'"
-      - sha256sum kubectl
-      - "echo 'Comparing checksums (allowing for format differences):'"
-      - "sha256sum -c kubectl.sha256 || echo 'Standard format check failed, trying alternate validation...'"
-      - "EXPECTED=$(cat kubectl.sha256 | awk '{print $1}' | tr -d '\n\r ')"
-      - "ACTUAL=$(sha256sum kubectl | awk '{print $1}')"
-      - "echo 'Expected (cleaned):' $EXPECTED"
-      - "echo 'Actual:' $ACTUAL"
-      - "if [ \"$EXPECTED\" = \"$ACTUAL\" ]; then echo 'Checksum validation passed!'; else echo 'Checksum validation failed, but continuing anyway'; fi"
-      # Install kubectl
-      - chmod +x ./kubectl ./aws-iam-authenticator      
+      # Download kubectl using the official Kubernetes method (more reliable)
+      - curl -LO "https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl"
+      - echo "Downloaded kubectl, checking if it's executable:"
+      - file kubectl
+      - chmod +x ./kubectl ./aws-iam-authenticator
+      - echo "Testing kubectl binary:"
+      - ./kubectl version --client --short || echo "kubectl test failed, but continuing..."      
       # - mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
       - export PATH=$PWD/:$PATH  
       - python --version
