@@ -20,8 +20,12 @@ phases:
       - curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.33/bin/linux/amd64/kubectl
       # Download the kubectl checksum file
       - curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.33/bin/linux/amd64/kubectl.sha256
-      # Validate the kubectl binary against the checksum file (fix format issue)
-      - echo "$(cat kubectl.sha256)  kubectl" | sha256sum -c -
+      # Validate the kubectl binary against the checksum file (robust approach)
+      - EXPECTED_CHECKSUM=$(cat kubectl.sha256 | tr -d '\n' | tr -d '\r')
+      - ACTUAL_CHECKSUM=$(sha256sum kubectl | cut -d' ' -f1)
+      - echo "Expected checksum: $EXPECTED_CHECKSUM"
+      - echo "Actual checksum: $ACTUAL_CHECKSUM"
+      - test "$EXPECTED_CHECKSUM" = "$ACTUAL_CHECKSUM" || (echo "Checksum mismatch!" && exit 1)
       # Install kubectl
       - chmod +x ./kubectl ./aws-iam-authenticator      
       # - mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
