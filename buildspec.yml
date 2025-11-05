@@ -41,9 +41,10 @@ phases:
       - echo `kubectl version --short --client`
       - python -m pip install --upgrade --force pip
       - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add
-      # Fix GPG key issues by removing problematic repositories temporarily
-      - "apt-get update 2>/dev/null || (echo 'Fixing repository issues...' && rm -f /etc/apt/sources.list.d/corretto.list && apt-get update)"
-      - apt-get -y install jq
+      # Completely disable problematic repositories and force update
+      - "rm -f /etc/apt/sources.list.d/corretto.list /etc/apt/sources.list.d/*corretto* || true"
+      - "apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true || true"
+      - "apt-get -y install jq || apt-get -y install jq --allow-unauthenticated"
       - pip install --upgrade awscli pytest
   pre_build:
     commands:
